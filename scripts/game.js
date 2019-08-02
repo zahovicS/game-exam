@@ -134,7 +134,6 @@ function create(){
     });
     rightButton.on('pointerout',doStop);
     upButton.on('pointerdown',doJump);
-
 }
 //funciones de movimiento
 function doGoLeft()
@@ -164,9 +163,6 @@ function doJump()
 {
 		//condicionamos si el jugador esta tocando el suelo
 	if (player.body.touching.down){
-		player.setVelocityY(-330);
-	}
-	else if(player.body.touching.down&&left||player.body.touching.down&&right){
 		player.setVelocityY(-330);
 	}
 }
