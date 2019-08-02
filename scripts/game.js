@@ -28,6 +28,9 @@ let config=
 		create: create,
 		update: update
 	}
+	input: {
+        activePointers: 3
+    }
 };
 //variable del jugador
 let player;
