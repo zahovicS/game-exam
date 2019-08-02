@@ -27,7 +27,7 @@ let config=
 		preload: preload,
 		create: create,
 		update: update
-	}
+	},
 	input: {
         activePointers: 3
     }
