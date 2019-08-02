@@ -70,6 +70,7 @@ function preload(){
 	this.load.image('up-arrow','img/up-arrow.png');
 	this.load.image('left-arrow','img/left-arrow.png');
 	this.load.image('right-arrow','img/right-arrow.png');
+	this.load.image('gaso','img/gaso-alien.png');
 }
 //creamos la funcion de crear
 function create(){
@@ -86,9 +87,11 @@ function create(){
     platforms.create(-200,260,'platforms').setScale(2).refreshBody();
     platforms.create(400,130,'platforms');
     platforms.create(800,300,'platforms');
+    platforms.create(800,100,'platforms');
 
     //configuracion del jugador
     player=this.physics.add.sprite(300,200,'alien');
+    gasolina=this.physics.add.sprite(20,20,'gaso');
     //Establecemos un rebote de 0.2 al jugador
     player.setBounce(0.2);
     //Establecemos que el jugador podra tocar las plataformas
