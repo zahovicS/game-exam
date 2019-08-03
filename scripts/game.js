@@ -50,15 +50,16 @@ let gameOver=false;
 let scoreText;
 //vriable del texto que se muestra al perder
 let gameOverText;
-//le damos a la variable game la configuracion antes echa
-let game=new Phaser.Game(config);
-//creamos la funcion de precarga
 let upButton;
 let up=false;
 let leftButton;
 let left=false;
 let rightButton;
 let right=false;
+//le damos a la variable game la configuracion antes echa
+let game=new Phaser.Game(config);
+//creamos la funcion de precarga
+
 function preload(){
 	//precargamos las imagenes o sprites que vamos a utilizar
 				   //una clave, ubicacion
@@ -73,6 +74,7 @@ function preload(){
 	this.load.image('gaso','img/gaso-alien.png');
 	this.load.image('tube','img/tube-enemies2.png');
 	this.load.image('bomb','img/bomb3.png');
+	this.load.image('gameover','img/game-over2.png');
 }
 //creamos la funcion de crear
 function create(){
@@ -86,27 +88,26 @@ function create(){
     platforms.create(531,570,'base2');
     //plataformas repartidas por el escenario
     platforms.create(-200,260,'platforms').setScale(2).refreshBody();
-    //platforms.create(400,130,'platforms');
     platforms.create(800,300,'platforms');
     platforms.create(850,120,'platforms');
     platforms.create(400,90,'tube');
 
     //configuracion del jugador
     player=this.physics.add.sprite(300,200,'alien');
+    //añadimos un grupo: gasolina con fisicas
     gasolina=this.physics.add.group({
     	key: 'gaso',
+    	//repetir 4 veces, +1 
     	repeat: 4,
+    	//donde lo colocaremos x,y , step, cuanto de x se va a alejar, y cuando de y
     	setXY: { x:10,y:2,stepX:195,stepY:10}
     });
-    gasolina.children.iterate(function(child){
-    	child.setBounceY(Phaser.Math.FloatBetween(0.2,0));
-    });
+    enemies=this.physics.add.group();
     //Establecemos un rebote de 0.2 al jugador
     player.setBounce(0.2);
     //Establecemos que el jugador podra tocar las plataformas
     player.setCollideWorldBounds(true);
     //creamos las animaciones en este caso la izquierda
-
     this.anims.create({
     	//una clave o identificador para llamarlo
     	key: 'izquierda',
@@ -132,15 +133,10 @@ function create(){
     });
     //llamada de los cursores del teclado hacia la funcion cursors
     cursors = this.input.keyboard.createCursorKeys();
-    enemies=this.physics.add.group();
-    //establecemos que el jugador podra colisionar con las plataformas
-    this.physics.add.collider(player,platforms);
-    this.physics.add.collider(gasolina,platforms);
-    this.physics.add.collider(enemies,platforms);
+    //botones para jugar en mobil begin
     leftButton=this.add.image(70,540,'left-arrow').setInteractive();
     upButton=this.add.image(720,530,'up-arrow').setInteractive();
     rightButton=this.add.image(200,540,'right-arrow').setInteractive();
-
     leftButton.on('pointerdown',function(){
     	left=true;
     });
@@ -151,8 +147,19 @@ function create(){
     });
     rightButton.on('pointerout',doStop);
     upButton.on('pointerdown',doJump);
-
+    //end
+    //texto de puntaje
+    scoreText = this.add.text(16,16, 'Puntaje: 0',{
+    	fontSize: '32px',
+    	fill: 'white'
+    });
+    //establecemos que el jugador podra colisionar con las plataformas
+    this.physics.add.collider(player,platforms);
+    this.physics.add.collider(gasolina,platforms);
+    this.physics.add.collider(enemies,platforms);
+    //funcion jugador tocando el objetivo y se ejectua una funcion
     this.physics.add.overlap(player,gasolina,collectGaso,null,this);
+    //un colicionador ejecutando una funcion, entre el jugador y el enemigo
     this.physics.add.collider(player,enemies,hitEnemies,null,this);
 }
 //funciones de movimiento
@@ -193,6 +200,7 @@ function update(){
 	//verificamos si el gameOver esta en verdadero, sino no hacemos nada
 	if (gameOver)
 	{
+		this.add.image(400,300,'gameover');
 		return;
 	}
 	//verificamos que este presionado las teclas establecidas: izquierda
@@ -215,29 +223,38 @@ function update(){
 		doJump();
 	}
 }
+//funcion para el colicionador entre el objetivo y el jugador
 function collectGaso(player,gaso){
+	//la clave del sprite gasolina: gaso, se desabilitara cada vez que colectamos la gasolina
 	gaso.disableBody(true,true);
+	//agregamos 1 puntos mas al score cada vez que recolectmos una gasolina
 	score +=10;
-	
+	scoreText.setText('Puntaje: '+ score);
+	//verificamos si todas las gasolinas en el escenario estan "recolectadas" por el jugador
 	if (gasolina.countActive(true) === 0)
 	{
-		console.log('recolecto');
+		//a los hijos de la gasolina los volvemos a habilitar tal como la primera vez
 		gasolina.children.iterate(function(child){
             child.enableBody(true, child.x, 0, true, true);
         });
+        //cuando todas las gasolinas esten recolectadas aparecera un enemigo: bomb
 		let enemie=enemies.create(400,190,'bomb');
 		enemie.setBounce(1);
 		enemie.setCollideWorldBounds(true);
 		enemie.setVelocity(Phaser.Math.Between(-200,200),50);
 		enemie.allowGravity=false;	
 	}	
-
 }
 
+//funcion para el colicionador entre el jugador y el enemigo: bomb
 function hitEnemies(player,enemies)
 {
+	//paramos todas las fisicas
 	this.physics.pause();
+	//al juador po pintamos de un color rojo
 	player.setTint(0xff0000);
+	//le decimos que ejecutemos la animacion de frente
 	player.anims.play('frente');
+	//establecemos que el juego se a acabado
 	gameOver=true;
 }
