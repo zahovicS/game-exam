@@ -71,13 +71,14 @@ function preload(){
 	this.load.image('left-arrow','img/left-arrow.png');
 	this.load.image('right-arrow','img/right-arrow.png');
 	this.load.image('gaso','img/gaso-alien.png');
+	this.load.image('tube','img/tube-enemies2.png');
+	this.load.image('bomb','img/bomb3.png');
 }
 //creamos la funcion de crear
 function create(){
 	//añadimos las imagenes
 	//     ubicacion x,y   , la clave
 	this.add.image(400,300,'bg');
-
 	//asociamos las plataformas a un grupo estatico con fisicas, tambien hay dinamicas
 	platforms=this.physics.add.staticGroup();
 	//plataforma incial, posicion casi al inferior
@@ -85,13 +86,21 @@ function create(){
     platforms.create(531,570,'base2');
     //plataformas repartidas por el escenario
     platforms.create(-200,260,'platforms').setScale(2).refreshBody();
-    platforms.create(400,130,'platforms');
+    //platforms.create(400,130,'platforms');
     platforms.create(800,300,'platforms');
-    platforms.create(800,100,'platforms');
+    platforms.create(850,120,'platforms');
+    platforms.create(400,90,'tube');
 
     //configuracion del jugador
     player=this.physics.add.sprite(300,200,'alien');
-    gasolina=this.physics.add.sprite(20,20,'gaso');
+    gasolina=this.physics.add.group({
+    	key: 'gaso',
+    	repeat: 4,
+    	setXY: { x:10,y:2,stepX:195,stepY:10}
+    });
+    gasolina.children.iterate(function(child){
+    	child.setBounceY(Phaser.Math.FloatBetween(0.2,0));
+    });
     //Establecemos un rebote de 0.2 al jugador
     player.setBounce(0.2);
     //Establecemos que el jugador podra tocar las plataformas
@@ -123,9 +132,11 @@ function create(){
     });
     //llamada de los cursores del teclado hacia la funcion cursors
     cursors = this.input.keyboard.createCursorKeys();
+    enemies=this.physics.add.group();
     //establecemos que el jugador podra colisionar con las plataformas
     this.physics.add.collider(player,platforms);
-
+    this.physics.add.collider(gasolina,platforms);
+    this.physics.add.collider(enemies,platforms);
     leftButton=this.add.image(70,540,'left-arrow').setInteractive();
     upButton=this.add.image(720,530,'up-arrow').setInteractive();
     rightButton=this.add.image(200,540,'right-arrow').setInteractive();
@@ -140,6 +151,9 @@ function create(){
     });
     rightButton.on('pointerout',doStop);
     upButton.on('pointerdown',doJump);
+
+    this.physics.add.overlap(player,gasolina,collectGaso,null,this);
+    this.physics.add.collider(player,enemies,hitEnemies,null,this);
 }
 //funciones de movimiento
 function doGoLeft()
@@ -200,4 +214,30 @@ function update(){
 	{
 		doJump();
 	}
+}
+function collectGaso(player,gaso){
+	gaso.disableBody(true,true);
+	score +=10;
+	
+	if (gasolina.countActive(true) === 0)
+	{
+		console.log('recolecto');
+		gasolina.children.iterate(function(child){
+            child.enableBody(true, child.x, 0, true, true);
+        });
+		let enemie=enemies.create(400,190,'bomb');
+		enemie.setBounce(1);
+		enemie.setCollideWorldBounds(true);
+		enemie.setVelocity(Phaser.Math.Between(-200,200),50);
+		enemie.allowGravity=false;	
+	}	
+
+}
+
+function hitEnemies(player,enemies)
+{
+	this.physics.pause();
+	player.setTint(0xff0000);
+	player.anims.play('frente');
+	gameOver=true;
 }
