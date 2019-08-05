@@ -98,9 +98,9 @@ function create(){
     gasolina=this.physics.add.group({
     	key: 'gaso',
     	//repetir 4 veces, +1 
-    	repeat: 99,
+    	repeat: 4,
     	//donde lo colocaremos x,y , step, cuanto de x se va a alejar, y cuando de y
-    	setXY: { x:1,y:2,stepX:20,stepY:20}
+    	setXY: { x:10,y:2,stepX:195,stepY:10}
     });
     enemies=this.physics.add.group();
     //Establecemos un rebote de 0.2 al jugador
